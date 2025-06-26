@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Casdoor Login</title>
+</head>
+<body>
+  <h1>Casdoor Login (Token in Cookie)</h1>
+  <p id="status">Not logged in</p>
+  <button onclick="login()">Login with Casdoor</button>
+  <button onclick="getUserInfo()">Get User Info</button>
+  <pre id="userinfo"></pre>
+
+<h2>Cryptocurrency Updates</h2>
+<button onclick="subscribe()">Subscribe to Updates</button>
+
+<div id="crypto-container" style="display: none;">
+  <div id="dogeusdt" style="background-color:#fdd; padding:5px; margin:5px;"></div>
+  <div id="btcusdt" style="background-color:#fdd; padding:5px; margin:5px;"></div>
+  <div id="ethusdt" style="background-color:#dfd; padding:5px; margin:5px;"></div>
+  <div id="xrpusdt" style="background-color:#fdd; padding:5px; margin:5px;"></div>
+</div>
+
+  <script>
+
+    let ws;
+    const previousPrices = {};
+
+  function login() {
+    window.location.href = "/login";
+  }
+
+  async function getUserInfo() {
+    const res = await fetch("/userinfo");
+    if (res.status === 401) {
+      document.getElementById("status").textContent = "log in to view";
+      return;
+    }
+
+    const data = await res.json();
+
+    const output = {
+      userId: data.userId ,  
+      username: data.username
+    };
+
+    document.getElementById("userinfo").textContent = JSON.stringify(output, null, 2);
+    document.getElementById("status").textContent = "Already logged in!";
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const res = await fetch("/userinfo");
+    if (res.status !== 200) {
+      document.getElementById("status").textContent = "not logged in";
+    } else {
+      document.getElementById("status").textContent = "Already logged in!";
+    }
+  });
+
+  async function subscribe() {
+
+  const res = await fetch("/userinfo");
+
+  if (res.status !== 200) {
+    document.getElementById("status").textContent = "log in to view updates";
+    return;
+  }
+
+  document.getElementById("crypto-container").style.display = "block";
+    ws = new WebSocket("wss://localhost:8443");
+
+    ws.onopen = () => {
+      document.getElementById("status").textContent = "Connected to WebSocket";
+    };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      if (msg.error) {
+        document.getElementById("status").textContent = "Access denied: " + msg.error;
+        return;
+      }
+
+      const ticker = msg.data.s;
+      const price = msg.data.c;
+      const time = new Date(msg.data.E).toLocaleTimeString();
+
+      const display = `${ticker}: $${price} (${time})`;
+
+      const box = document.getElementById(ticker.toLowerCase());
+    if (box) {
+      const prev = previousPrices[ticker];
+
+      if (prev !== undefined) {
+        if (price > prev) {
+          box.style.backgroundColor = '#dfd'; // зелений
+        } else if (price < prev) {
+          box.style.backgroundColor = '#fdd'; // червоний
+        }
+      }
+
+      previousPrices[ticker] = price; 
+      box.textContent = display;
+    }
+    };
+  }
+
+</script>
+</body>
+</html>

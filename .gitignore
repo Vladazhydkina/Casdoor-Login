@@ -1,0 +1,5 @@
+.env
+localhost.p12
+*.pem
+certs/
+node_modules/
