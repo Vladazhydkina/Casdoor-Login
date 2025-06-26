@@ -1,4 +1,4 @@
-# 💡 Casdoor Login + Binance WebSocket Crypto Tracker
+#Casdoor Login + Binance WebSocket Crypto Tracker
 
 Цей проєкт — це вебзастосунок, який реалізує:
 
@@ -11,7 +11,7 @@
 
 ---
 
-## Стек технологій
+## Стек технологій:
 
 - **Node.js** + **Express** — бекенд-сервер
 - **Casdoor** — Identity & Access Management (IAM)
